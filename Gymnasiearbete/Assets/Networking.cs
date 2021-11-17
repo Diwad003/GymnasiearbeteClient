@@ -19,16 +19,16 @@ public class Networking : MonoBehaviour
         try
         {
             string tempIP;
-            if (tempIPInput.transform.GetChild(1).GetComponent<Text>().IsActive())
+            if (tempIPInput.transform.GetChild(0).GetComponent<Text>().IsActive())
             {
-                tempIP = tempIPInput.transform.GetChild(1).GetComponent<Text>().text;
+                tempIP = tempIPInput.transform.GetChild(0).GetComponent<Text>().text;
             }
             else
             {
-                tempIP = tempIPInput.transform.GetChild(2).GetComponent<Text>().text;
+                tempIP = tempIPInput.transform.GetChild(1).GetComponent<Text>().text;
             }
 
-            //myServerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            myServerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPAddress tempIPAddress = IPAddress.Parse(tempIP);
             IPEndPoint tempServerEndpoint = new IPEndPoint(tempIPAddress, 54000);
 
@@ -44,22 +44,30 @@ public class Networking : MonoBehaviour
             GetComponent<UI>().RemakeConnectionToServerMenu();
         }
 
-        Send(Encoding.UTF8.GetBytes("GETSYSTEMTIME"));
-        ReceiveLoop(1);
+        LastReceivedFromServer();
     }
 
-    public void ReceiveLoop(int aTimesToLoop)
+    public void LastReceivedFromServer()
     {
+        Send(Encoding.UTF8.GetBytes("GETSYSTEMTIME"));
+        string tempSystemTime = ReceiveLoop(1);
+        GameObject tempServerText = GameObject.Find("LastRequestText");
+        tempServerText.GetComponent<Text>().text = "Last Sure Connection To Server: " + tempSystemTime;
+    }
+
+    public string ReceiveLoop(int aTimesToLoop)
+    {
+        byte[] tempBuffer = new byte[500];
         for (int i = 0; i < aTimesToLoop; i++)
         {
-            byte[] tempBuffer = new byte[1000];
             myServerSocket.Receive(tempBuffer);
             if (!myServerSocket.Connected)
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                return null;
             }
-            GetComponent<UI>().myLastReceivedFromServer = Encoding.UTF8.GetString(tempBuffer);
         }
+        return Encoding.UTF8.GetString(tempBuffer);
     }
 
     public void Send(byte[] aBuffer)

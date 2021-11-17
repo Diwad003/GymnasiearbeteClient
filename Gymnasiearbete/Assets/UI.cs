@@ -9,7 +9,6 @@ using System.Net.Sockets;
 public class UI : MonoBehaviour
 {
     public string myPredoneIP;
-    public string myLastReceivedFromServer;
     public GameObject myConnectionMenu;
     public GameObject myInputField;
     public GameObject myStartMainMenu;
@@ -34,7 +33,7 @@ public class UI : MonoBehaviour
         gameObject.AddComponent<Networking>();
         gameObject.GetComponent<Networking>().Connect();
         if (gameObject.GetComponent<Networking>().myServerSocket.Connected)
-            WriteLastRequestSent();
+            gameObject.GetComponent<Networking>().LastReceivedFromServer();
         StartMenu();
     }
 
@@ -46,20 +45,14 @@ public class UI : MonoBehaviour
         myInputField.SetActive(true);
     }
 
-    public void WriteLastRequestSent()
-    {
-        GameObject tempServerText = GameObject.Find("LastRequestText");
-        tempServerText.GetComponent<Text>().text = myLastReceivedFromServer;
-    }
-
     void StartMenu()
     {
         myStartMainMenu.SetActive(true);
-        myStartButtonList.Add(CreateButton(new Vector2(-600, 400)));
+        myStartButtonList.Add(CreateButton(new Vector2(-510, 270)));
         for (int i = 0; i < 1; i++)
         {
-            myStartButtonList.Add(CreateButton(new Vector2(myStartButtonList[i].transform.localPosition.x,
-                myStartButtonList[i].transform.localPosition.y - myStartButtonList[i].GetComponent<RectTransform>().rect.height)));
+            myStartButtonList.Add(CreateButton(new Vector2(myStartButtonList[i].transform.localPosition.x, 
+                myStartButtonList[i].transform.localPosition.y - (myStartButtonList[i].GetComponent<RectTransform>().rect.height + 149))));
         }
 
         myStartButtonList[0].GetComponentInChildren<Text>().text = "Load Level";

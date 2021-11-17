@@ -9,7 +9,7 @@ public class LoadLevel : MonoBehaviour
     Networking myNetworking;
     Socket myServerSocket;
 
-    void Start()
+    private void Start()
     {
         LoadLevel1();
     }
