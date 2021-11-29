@@ -13,6 +13,11 @@ public class Networking : MonoBehaviour
 {
     public Socket myServerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
     
+    public Socket GetServerSocket()
+    {
+        return myServerSocket;
+    }
+
     public void Connect()
     {
         GameObject tempIPInput = GetComponent<UI>().myInputField;
@@ -43,16 +48,12 @@ public class Networking : MonoBehaviour
             Debug.Log("Unexpected exception : " + aException.ToString());
             GetComponent<UI>().RemakeConnectionToServerMenu();
         }
-
-        LastReceivedFromServer();
     }
 
-    public void LastReceivedFromServer()
+    public void LastReceivedFromServer(string aSystemTime)
     {
-        Send(Encoding.UTF8.GetBytes("GETSYSTEMTIME"));
-        string tempSystemTime = ReceiveLoop(1);
         GameObject tempServerText = GameObject.Find("LastRequestText");
-        tempServerText.GetComponent<Text>().text = "Last Sure Connection To Server: " + tempSystemTime;
+        tempServerText.GetComponent<Text>().text = "Last Sure Connection To Server: " + aSystemTime;
     }
 
     public string ReceiveLoop(int aTimesToLoop)

@@ -32,8 +32,6 @@ public class UI : MonoBehaviour
     {
         gameObject.AddComponent<Networking>();
         gameObject.GetComponent<Networking>().Connect();
-        if (gameObject.GetComponent<Networking>().myServerSocket.Connected)
-            gameObject.GetComponent<Networking>().LastReceivedFromServer();
         StartMenu();
     }
 
@@ -48,10 +46,10 @@ public class UI : MonoBehaviour
     void StartMenu()
     {
         myStartMainMenu.SetActive(true);
-        myStartButtonList.Add(CreateButton(new Vector2(-510, 270)));
+        myStartButtonList.Add(CreateButton(new Vector2(-350, 270)));
         for (int i = 0; i < 1; i++)
         {
-            myStartButtonList.Add(CreateButton(new Vector2(myStartButtonList[i].transform.localPosition.x, 
+            myStartButtonList.Add(CreateButton(new Vector2(myStartButtonList[i].transform.localPosition.x,
                 myStartButtonList[i].transform.localPosition.y - (myStartButtonList[i].GetComponent<RectTransform>().rect.height + 149))));
         }
 
