@@ -21,10 +21,11 @@ public class LoadLevel : MonoBehaviour
         byte[] tempBuffer = new byte[1000];
         myNetworking.GetServerSocket().Receive(tempBuffer);
         string tempStringofData = Encoding.UTF8.GetString(tempBuffer);
+
         List<string> tempDataList = tempStringofData.Split('|').ToList();
         myNetworking.LastReceivedFromServer(tempDataList[0]);
         tempDataList.RemoveAt(0);
 
-
+        GameObject h = GameObject.CreatePrimitive(PrimitiveType.Cube);
     }
 }
