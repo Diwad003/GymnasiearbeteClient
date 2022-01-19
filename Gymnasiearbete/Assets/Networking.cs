@@ -56,19 +56,20 @@ public class Networking : MonoBehaviour
         tempServerText.GetComponent<Text>().text = "Last Sure Connection To Server: " + aSystemTime;
     }
 
-    public string ReceiveLoop(int aTimesToLoop)
+    public List<string> Receive()
     {
-        byte[] tempBuffer = new byte[500];
-        for (int i = 0; i < aTimesToLoop; i++)
-        {
-            myServerSocket.Receive(tempBuffer);
-            if (!myServerSocket.Connected)
-            {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-                return null;
-            }
-        }
-        return Encoding.UTF8.GetString(tempBuffer);
+        byte[] tempBuffer = new byte[1000];
+        myServerSocket.Receive(tempBuffer);
+        string tempStringofData = Encoding.UTF8.GetString(tempBuffer);
+        string[] tempStringArray = tempStringofData.Split('|');
+        List<string> tempStringList = new List<string>();
+        for (int i = 0; i < tempStringArray.Length; i++)
+            tempStringList.Add(tempStringArray[i]);
+
+        GameObject.Find("LastRequestText").GetComponent<Text>().text = tempStringList[0];
+        tempStringList.RemoveAt(0);
+
+        return tempStringList;
     }
 
     public void Send(byte[] aBuffer)

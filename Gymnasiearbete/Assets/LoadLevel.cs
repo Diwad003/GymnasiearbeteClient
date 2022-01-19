@@ -4,6 +4,8 @@ using System.Net.Sockets;
 using System.Text;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
+using System.IO;
 
 public class LoadLevel : MonoBehaviour
 {
@@ -17,15 +19,18 @@ public class LoadLevel : MonoBehaviour
 
     void LoadLevel1()
     {
-        myNetworking.Send(Encoding.UTF8.GetBytes("LoadLevel1"));
-        byte[] tempBuffer = new byte[1000];
-        myNetworking.GetServerSocket().Receive(tempBuffer);
-        string tempStringofData = Encoding.UTF8.GetString(tempBuffer);
+        myNetworking.Send(Encoding.UTF8.GetBytes("Texture"));
+        List<string> tempStringList = myNetworking.Receive();
+        for (int i = 0; i < tempStringList.Count; i++)
+            Debug.Log(tempStringList[i]);
 
-        List<string> tempDataList = tempStringofData.Split('|').ToList();
-        myNetworking.LastReceivedFromServer(tempDataList[0]);
-        tempDataList.RemoveAt(0);
+        Debug.Log(tempStringList[0]);
+        int tempPictureSize = int.Parse(tempStringList[0]);
+        tempStringList.RemoveAt(0);
 
-        GameObject h = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        byte[] tempImageBytes = Encoding.Unicode.GetBytes(tempStringList[0]);
+        tempStringList.RemoveAt(0);
+        Texture2D tempTexture = new Texture2D(tempPictureSize/2, tempPictureSize/2);
+        tempTexture.LoadImage(tempImageBytes);
     }
 }
