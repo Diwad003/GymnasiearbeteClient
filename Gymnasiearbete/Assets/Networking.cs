@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -60,14 +61,22 @@ public class Networking : MonoBehaviour
     {
         byte[] tempBuffer = new byte[1000];
         myServerSocket.Receive(tempBuffer);
-        string tempStringofData = Encoding.UTF8.GetString(tempBuffer);
-        string[] tempStringArray = tempStringofData.Split('|');
+
+        string tempString = Encoding.UTF8.GetString(tempBuffer);
+        for (int i = 0; i < tempString.Length; i++)
+        {
+            tempString = tempString.Replace("\0", string.Empty);
+        }
+        string[] tempStringArray = tempString.Split('/');
+
         List<string> tempStringList = new List<string>();
         for (int i = 0; i < tempStringArray.Length; i++)
             tempStringList.Add(tempStringArray[i]);
 
+
         GameObject.Find("LastRequestText").GetComponent<Text>().text = tempStringList[0];
         tempStringList.RemoveAt(0);
+        tempStringList.RemoveAt(tempStringList.Count - 1);
 
         return tempStringList;
     }

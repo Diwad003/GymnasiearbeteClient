@@ -21,16 +21,22 @@ public class LoadLevel : MonoBehaviour
     {
         myNetworking.Send(Encoding.UTF8.GetBytes("Texture"));
         List<string> tempStringList = myNetworking.Receive();
-        for (int i = 0; i < tempStringList.Count; i++)
-            Debug.Log(tempStringList[i]);
 
-        Debug.Log(tempStringList[0]);
+
         int tempPictureSize = int.Parse(tempStringList[0]);
         tempStringList.RemoveAt(0);
 
-        byte[] tempImageBytes = Encoding.Unicode.GetBytes(tempStringList[0]);
+
+        byte[] tempImageBytes = Encoding.UTF8.GetBytes(tempStringList[0]);
         tempStringList.RemoveAt(0);
         Texture2D tempTexture = new Texture2D(tempPictureSize/2, tempPictureSize/2);
         tempTexture.LoadImage(tempImageBytes);
+
+        Sprite tempSprite = Sprite.Create(tempTexture, new Rect(0, 0, tempTexture.width, tempTexture.height), new Vector2(0,0));
+
+        GameObject tempGameObject = GameObject.Find("Image");
+        tempGameObject.GetComponent<Image>().sprite = tempSprite;
+
+        tempTexture.Apply();
     }
 }
