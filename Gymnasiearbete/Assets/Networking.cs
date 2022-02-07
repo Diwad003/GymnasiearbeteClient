@@ -59,16 +59,33 @@ public class Networking : MonoBehaviour
 
     public List<string> Receive()
     {
-        byte[] tempBuffer = new byte[1000];
-        myServerSocket.Receive(tempBuffer);
+        //Get data from server
+        List<byte> tempBuffer = new List<byte>();
+        myServerSocket.ReceiveTimeout = 1000;
+        while (myServerSocket.Connected)
+        {
+            try
+            {
+                byte[] tempBufferArray = new byte[1000];
+                myServerSocket.Receive(tempBufferArray);
+                for (int i = 0; i < tempBufferArray.Length; i++)
+                    tempBuffer.Add(tempBufferArray[i]);
+            }
+            catch (Exception tempException)
+            {
+                throw;
+            }
+;
+        }
 
-        string tempString = Encoding.UTF8.GetString(tempBuffer);
+        //Convert to string and return
+        string tempString = Encoding.UTF8.GetString(tempBuffer.ToArray());
         for (int i = 0; i < tempString.Length; i++)
         {
             tempString = tempString.Replace("\0", string.Empty);
         }
-        string[] tempStringArray = tempString.Split('/');
 
+        string[] tempStringArray = tempString.Split('/');
         List<string> tempStringList = new List<string>();
         for (int i = 0; i < tempStringArray.Length; i++)
             tempStringList.Add(tempStringArray[i]);

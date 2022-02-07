@@ -6,6 +6,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
+using System;
 
 public class LoadLevel : MonoBehaviour
 {
@@ -23,14 +24,16 @@ public class LoadLevel : MonoBehaviour
         List<string> tempStringList = myNetworking.Receive();
 
 
-        int tempPictureSize = int.Parse(tempStringList[0]);
+        int tempPixtureWidth = Convert.ToInt32(tempStringList[0]);
+        tempStringList.RemoveAt(0);
+        int tempPixtureHeight = Convert.ToInt32(tempStringList[0]);
         tempStringList.RemoveAt(0);
 
+        Texture2D tempTexture = new Texture2D(tempPixtureWidth, tempPixtureHeight);
 
-        byte[] tempImageBytes = Encoding.UTF8.GetBytes(tempStringList[0]);
-        tempStringList.RemoveAt(0);
-        Texture2D tempTexture = new Texture2D(tempPictureSize/2, tempPictureSize/2);
-        tempTexture.LoadImage(tempImageBytes);
+
+        //bool tempImageLoaded = tempTexture.LoadImage((byte)tempStringList[0]);
+        //Debug.Log("Image Loaded " + tempImageLoaded);
 
         Sprite tempSprite = Sprite.Create(tempTexture, new Rect(0, 0, tempTexture.width, tempTexture.height), new Vector2(0,0));
 
