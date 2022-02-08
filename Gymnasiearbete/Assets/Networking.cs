@@ -66,7 +66,7 @@ public class Networking : MonoBehaviour
         {
             try
             {
-                byte[] tempBufferArray = new byte[1000];
+                byte[] tempBufferArray = new byte[1000000];
                 myServerSocket.Receive(tempBufferArray);
                 for (int i = 0; i < tempBufferArray.Length; i++)
                     tempBuffer.Add(tempBufferArray[i]);
@@ -75,7 +75,6 @@ public class Networking : MonoBehaviour
             {
                 throw;
             }
-;
         }
 
         //Convert to string and return
