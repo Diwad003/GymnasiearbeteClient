@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
 using System;
+using OpenCvSharp;
 
 public class LoadLevel : MonoBehaviour
 {
@@ -23,23 +24,18 @@ public class LoadLevel : MonoBehaviour
         myNetworking.Send(Encoding.UTF8.GetBytes("Texture"));
         List<string> tempStringList = myNetworking.Receive();
 
-
-        int tempPixtureWidth = Convert.ToInt32(tempStringList[0]);
+        byte[] tempByteArray = Encoding.UTF8.GetBytes(tempStringList[0]);
         tempStringList.RemoveAt(0);
-        int tempPixtureHeight = Convert.ToInt32(tempStringList[0]);
-        tempStringList.RemoveAt(0);
-
-        Texture2D tempTexture = new Texture2D(tempPixtureWidth, tempPixtureHeight);
-
+        Mat tempImage = Cv2.ImDecode(tempByteArray, 0);
+        Cv2.ImShow("Image", tempImage);
+        Cv2.WaitKey(0);
 
         //bool tempImageLoaded = tempTexture.LoadImage((byte)tempStringList[0]);
         //Debug.Log("Image Loaded " + tempImageLoaded);
 
-        Sprite tempSprite = Sprite.Create(tempTexture, new Rect(0, 0, tempTexture.width, tempTexture.height), new Vector2(0,0));
+        //Sprite tempSprite = Sprite.Create(tempTexture, new Rect(0, 0, tempTexture.width, tempTexture.height), new Vector2(0,0));
 
         GameObject tempGameObject = GameObject.Find("Image");
-        tempGameObject.GetComponent<Image>().sprite = tempSprite;
-
-        tempTexture.Apply();
+        //tempGameObject.GetComponent<Image>().sprite = tempSprite;
     }
 }

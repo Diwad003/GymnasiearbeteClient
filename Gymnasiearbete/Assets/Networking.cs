@@ -60,22 +60,37 @@ public class Networking : MonoBehaviour
     public List<string> Receive()
     {
         //Get data from server
+        myServerSocket.ReceiveTimeout = 10000;
+        byte[] tempBufferArray = new byte[1000];
+        int tempReceivedBytes = myServerSocket.Receive(tempBufferArray);
+        byte[] tempBufferArray1 = new byte[tempReceivedBytes];
+        for (int i = 0; i < tempReceivedBytes; i++)
+        {
+            tempBufferArray[i] = tempBufferArray1[i];
+        }
+
+        string tempRecieveSizeString = Encoding.UTF8.GetString(tempBufferArray1, 0, tempBufferArray1.Length);
+
+        Debug.Log("Size String " + tempRecieveSizeString);
+        int tempSendSize = Convert.ToInt32(tempRecieveSizeString);
+        Debug.Log("Send Size" + tempSendSize);
+
         List<byte> tempBuffer = new List<byte>();
-        myServerSocket.ReceiveTimeout = 1000;
-        while (myServerSocket.Connected)
+        for (int i = 0; i < tempSendSize; i++)
         {
             try
             {
-                byte[] tempBufferArray = new byte[1000000];
-                myServerSocket.Receive(tempBufferArray);
-                for (int i = 0; i < tempBufferArray.Length; i++)
-                    tempBuffer.Add(tempBufferArray[i]);
+                int tempAmountOfBits = myServerSocket.Receive(tempBufferArray);
+                for (int j = 0; j < tempAmountOfBits; j++)
+                    tempBuffer.Add(tempBufferArray[j]);
             }
             catch (Exception tempException)
             {
                 throw;
             }
         }
+
+        Debug.Log("Through Recieve loop");
 
         //Convert to string and return
         string tempString = Encoding.UTF8.GetString(tempBuffer.ToArray());
@@ -92,7 +107,6 @@ public class Networking : MonoBehaviour
 
         GameObject.Find("LastRequestText").GetComponent<Text>().text = tempStringList[0];
         tempStringList.RemoveAt(0);
-        tempStringList.RemoveAt(tempStringList.Count - 1);
 
         return tempStringList;
     }

@@ -26,6 +26,7 @@ public class UI : MonoBehaviour
 
         myStartMainMenu.SetActive(false);
         myInputField.transform.GetChild(0).GetComponent<Text>().text = myPredoneIP;
+
     }
 
     public void StartButtonClick()
