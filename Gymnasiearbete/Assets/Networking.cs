@@ -12,9 +12,9 @@ using UnityEngine.UI;
 
 public class Networking : MonoBehaviour
 {
-    public Socket myServerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+    public TcpClient myServerSocket = new TcpClient();
     
-    public Socket GetServerSocket()
+    public TcpClient GetServerSocket()
     {
         return myServerSocket;
     }
@@ -34,13 +34,13 @@ public class Networking : MonoBehaviour
                 tempIP = tempIPInput.transform.GetChild(1).GetComponent<Text>().text;
             }
 
-            myServerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPAddress tempIPAddress = IPAddress.Parse(tempIP);
-            IPEndPoint tempServerEndpoint = new IPEndPoint(tempIPAddress, 54000);
+            IPEndPoint tempServerEndpoint = new IPEndPoint(tempIPAddress, 1000);
+            myServerSocket = new TcpClient(tempServerEndpoint);
 
             // Connect to Remote EndPoint  
             myServerSocket.Connect(tempServerEndpoint);
-            Debug.Log("Socket connected to " + myServerSocket.RemoteEndPoint.ToString());
+            Debug.Log("Socket connected to " + myServerSocket.Client.RemoteEndPoint.ToString());
 
             GetComponent<UI>().myConnectionMenu.SetActive(false);
         }
@@ -61,36 +61,27 @@ public class Networking : MonoBehaviour
     {
         //Get data from server
         myServerSocket.ReceiveTimeout = 10000;
-        byte[] tempBufferArray = new byte[1000];
-        int tempReceivedBytes = myServerSocket.Receive(tempBufferArray);
-        byte[] tempBufferArray1 = new byte[tempReceivedBytes];
-        for (int i = 0; i < tempReceivedBytes; i++)
-        {
-            tempBufferArray[i] = tempBufferArray1[i];
-        }
+        byte[] tempBufferArray = new byte[1024];
+        int tempReceivedBytes = myServerSocket.Client.Receive(tempBufferArray); //tempReceivedBytes gets size of the total send buffer for some reason
+        Debug.Log("Send Size" + tempReceivedBytes);
 
-        string tempRecieveSizeString = Encoding.UTF8.GetString(tempBufferArray1, 0, tempBufferArray1.Length);
 
-        Debug.Log("Size String " + tempRecieveSizeString);
-        int tempSendSize = Convert.ToInt32(tempRecieveSizeString);
-        Debug.Log("Send Size" + tempSendSize);
 
         List<byte> tempBuffer = new List<byte>();
-        for (int i = 0; i < tempSendSize; i++)
+        tempBufferArray = new byte[1024];
+
+        int tempAmountOfBits = myServerSocket.Client.Receive(tempBufferArray);
+        string str = Encoding.ASCII.GetString(tempBufferArray, 0, tempAmountOfBits);
+        Debug.Log("str " + str);
+
+        Debug.Log("tempAmountOfBits " + tempAmountOfBits);
+        for (int j = 0; j < tempAmountOfBits; j++)
         {
-            try
-            {
-                int tempAmountOfBits = myServerSocket.Receive(tempBufferArray);
-                for (int j = 0; j < tempAmountOfBits; j++)
-                    tempBuffer.Add(tempBufferArray[j]);
-            }
-            catch (Exception tempException)
-            {
-                throw;
-            }
+            tempBuffer.Add(tempBufferArray[j]);
+            Debug.Log("Buffer Array " + tempBufferArray[j]);
         }
 
-        Debug.Log("Through Recieve loop");
+
 
         //Convert to string and return
         string tempString = Encoding.UTF8.GetString(tempBuffer.ToArray());
@@ -113,6 +104,6 @@ public class Networking : MonoBehaviour
 
     public void Send(byte[] aBuffer)
     {
-        myServerSocket.Send(aBuffer);
+        myServerSocket.Client.Send(aBuffer);
     }
 }
