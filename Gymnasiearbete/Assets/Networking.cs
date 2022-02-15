@@ -1,14 +1,10 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class Networking : MonoBehaviour
@@ -51,50 +47,36 @@ public class Networking : MonoBehaviour
         }
     }
 
-    public void LastReceivedFromServer(string aSystemTime)
-    {
-        GameObject tempServerText = GameObject.Find("LastRequestText");
-        tempServerText.GetComponent<Text>().text = "Last Sure Connection To Server: " + aSystemTime;
-    }
-
     public List<string> Receive()
     {
         //Get data from server
         myServerSocket.ReceiveTimeout = 30000;
-        byte[] tempBufferArray = new byte[4];
-        myServerSocket.Send(Encoding.ASCII.GetBytes("Send"));
-        int tempReceivedBytes = myServerSocket.Receive(tempBufferArray);
+        myServerSocket.SendTimeout = 30000;
+        myServerSocket.Send(Encoding.UTF8.GetBytes("Send"));
 
-        int tempBufferInt = 0;
-        for (int i = 0; i < tempReceivedBytes; i++)
+
+        byte[] tempBufferList = new byte[int.MaxValue];
+        int tempBytesReceived = myServerSocket.Receive(tempBufferList);
+        string tempStringReceived = Encoding.ASCII.GetString(tempBufferList, 0, tempBytesReceived);
+        Debug.Log("tempStringReceived: " + tempStringReceived);
+
+
+        List<string> tempSplitBufferList = new List<string>();
+        tempSplitBufferList = tempStringReceived.Split('/').ToList();
+        for (int i = 0; i < tempSplitBufferList.Count; i++)
         {
-            if (tempBufferArray[i] != 0)
+            if (tempSplitBufferList[i] == "SystemTime")
             {
-                tempBufferInt = tempBufferArray[i];
+                tempSplitBufferList.RemoveAt(i);
+                GameObject tempServerText = GameObject.Find("LastRequestText");
+                tempServerText.GetComponent<Text>().text = "Last Sure Connection To Server: " + tempSplitBufferList[i];
+                tempSplitBufferList.RemoveAt(i);
+                Debug.Log("SystemTime Set");
             }
         }
 
-        
-        for (int i = 0; i < tempBufferInt; i++)
-        {
-            tempReceivedBytes = myServerSocket.Receive(tempBufferArray);
-        }
 
-
-        string tempString = Encoding.ASCII.GetString(tempBufferArray);
-        List<string> tempBufferList = tempString.Split('/').ToList();
-
-        //if (tempBufferList[0])
-        {
-
-        }
-
-
-        List<string> tempStringList = new List<string>();
-        GameObject.Find("LastRequestText").GetComponent<Text>().text = tempStringList[0];
-        tempStringList.RemoveAt(0);
-
-        return tempStringList;
+        return tempSplitBufferList;
     }
 
     public void Send(byte[] aBuffer)

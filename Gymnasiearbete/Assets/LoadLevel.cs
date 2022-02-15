@@ -25,7 +25,6 @@ public class LoadLevel : MonoBehaviour
         List<string> tempStringList = myNetworking.Receive();
 
         byte[] tempByteArray = Encoding.UTF8.GetBytes(tempStringList[0]);
-        tempStringList.RemoveAt(0);
         Mat tempImage = Cv2.ImDecode(tempByteArray, 0);
         Cv2.ImShow("Image", tempImage);
         Cv2.WaitKey(0);
