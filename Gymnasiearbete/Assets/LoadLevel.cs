@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
 using System;
-using OpenCvSharp;
+using UnityEditor;
 
 public class LoadLevel : MonoBehaviour
 {
@@ -19,28 +19,123 @@ public class LoadLevel : MonoBehaviour
         LoadLevel1();
     }
 
+    Texture2D FindTexture(string tempName)
+    {
+        Texture2D[] tempAllTextures = Resources.LoadAll<Texture2D>("Textures");
+        foreach (Texture2D tempTexture in tempAllTextures)
+        {
+            if (tempTexture.name == tempName)
+            {
+                return tempTexture;
+            }
+        }
+        return null;
+    }
+
     void LoadLevel1()
     {
-        myNetworking.Send(Encoding.UTF8.GetBytes("Texture"));
-        byte[] tempReceiveReturnArray = myNetworking.Receive().ToArray();
+        myNetworking.Send(Encoding.UTF8.GetBytes("LoadLevel1"));
+        List<string> tempReceiveReturn = myNetworking.Receive();
 
-        for (int i = 0; i < tempReceiveReturnArray.Length; i++)
+        List<Texture2D> tempTextures = new List<Texture2D>();
+        List<GameObject> tempGameObjects = new List<GameObject>();
+        while (tempReceiveReturn.Count != 0)
         {
-            Debug.Log("tempReceiveReturnArray i:" + i + "VALUE:" + tempReceiveReturnArray[i]);
+            if (tempReceiveReturn[0] == "Texture")
+            {
+                tempReceiveReturn.RemoveAt(0);
+                tempTextures = LoadAllTextures(ref tempReceiveReturn);
+            }
+            else if (tempReceiveReturn[0] == "GameObjects")
+            {
+                tempReceiveReturn.RemoveAt(0);
+                tempGameObjects = LoadAllGameObjects(ref tempReceiveReturn);
+            }
         }
 
-        Mat tempImage = Mat.FromImageData(tempReceiveReturnArray, ImreadModes.AnyColor);
-        Cv2.ImShow("Image", tempImage);
-        Cv2.WaitKey(0);
+        for (int i = 0; i < tempGameObjects.Count; i++)
+        {
+            tempGameObjects[i].GetComponent<MeshRenderer>().material.mainTexture = tempTextures[i];
+            Debug.Log("SET TEXTURE");
+        }
+    }
 
+    List<GameObject> LoadAllGameObjects(ref List<string> tempGameObjectNames)
+    {
+        List<Vector3> tempGameObjectPositions = new List<Vector3>();
+        List<GameObject> tempGameObjects = new List<GameObject>();
+        for (int i = 0; i < tempGameObjectNames.Count; i++)
+        {
+            if (tempGameObjectNames[i].Contains(':'))
+            {
+                string[] tempGameObjectPositonString = tempGameObjectNames[i].Split(':');
+                for (int j = 0; j < tempGameObjectPositonString.Length; j++)
+                {
+                    tempGameObjectPositions.Add(new Vector3(Convert.ToInt32(tempGameObjectPositonString[j]), Convert.ToInt32(tempGameObjectPositonString[j++]), Convert.ToInt32(tempGameObjectPositonString[j++])));
+                }
+                tempGameObjectNames.RemoveAt(i);
+                i--;
+            }
+            else if (tempGameObjectNames[i] == "Cube" 
+                || tempGameObjectNames[i] == "Capsule" 
+                || tempGameObjectNames[i] == "Cylinder" 
+                || tempGameObjectNames[i] == "Plane" 
+                || tempGameObjectNames[i] == "Quad" 
+                || tempGameObjectNames[i] == "Sphere")
+            {
+                if (tempGameObjectNames[i] == "Cube")
+                {
+                    tempGameObjects.Add(GameObject.CreatePrimitive(PrimitiveType.Cube));
+                    Debug.Log("Spawning a Cube");
+                }
+                else if (tempGameObjectNames[i] == "Capsule")
+                {
+                    tempGameObjects.Add(GameObject.CreatePrimitive(PrimitiveType.Capsule));
+                    Debug.Log("Spawning a Capsule");
+                }
+                else if (tempGameObjectNames[i] == "Cylinder")
+                {
+                    tempGameObjects.Add(GameObject.CreatePrimitive(PrimitiveType.Cylinder));
+                    Debug.Log("Spawning a Cylinder");
+                }
+                else if (tempGameObjectNames[i] == "Plane")
+                {
+                    tempGameObjects.Add(GameObject.CreatePrimitive(PrimitiveType.Plane));
+                    Debug.Log("Spawning a Plane");
+                }
+                else if (tempGameObjectNames[i] == "Quad")
+                {
+                    tempGameObjects.Add(GameObject.CreatePrimitive(PrimitiveType.Quad));
+                    Debug.Log("Spawning a Quad");
+                }
+                else if (tempGameObjectNames[i] == "Sphere")
+                {
+                    tempGameObjects.Add(GameObject.CreatePrimitive(PrimitiveType.Sphere));
+                    Debug.Log("Spawning a Sphere");
+                }
 
+                tempGameObjects[tempGameObjects.Count - 1].transform.position = tempGameObjectPositions[0];
+                tempGameObjectNames.RemoveAt(i);
+                i--;
+            }
+        }
 
-        //bool tempImageLoaded = tempTexture.LoadImage((byte)tempStringList[0]);
-        //Debug.Log("Image Loaded " + tempImageLoaded);
+        return tempGameObjects;
+    }
 
-        //Sprite tempSprite = Sprite.Create(tempTexture, new Rect(0, 0, tempTexture.width, tempTexture.height), new Vector2(0,0));
+    List<Texture2D> LoadAllTextures(ref List<string> tempTextureNames)
+    {
+        List<Texture2D> tempTextures = new List<Texture2D>();
+        while (tempTextureNames.Count != 0)
+        {
+            tempTextures.Add(FindTexture(tempTextureNames[0]));
+            tempTextureNames.RemoveAt(0);
+            if (tempTextureNames[0] == "GameObjects")
+            {
+                break;
+            }
+        }
 
-        GameObject tempGameObject = GameObject.Find("Image");
-        //tempGameObject.GetComponent<Image>().sprite = tempSprite;
+        return tempTextures;
     }
 }

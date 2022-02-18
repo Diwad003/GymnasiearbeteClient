@@ -47,14 +47,13 @@ public class Networking : MonoBehaviour
         }
     }
     
-    public List<byte> Receive()
+    public List<string> Receive()
     {
         //Get data from server
         myServerSocket.ReceiveTimeout = 30000;
         myServerSocket.SendTimeout = 30000;
         myServerSocket.Send(Encoding.UTF8.GetBytes("Send"));
 
-        List<byte> tempReturnBytes = new List<byte>();
         int tempBytesReceived = 0;
         string tempStringReceived = "";
         bool tempShouldContinueReciveLoop = true;
@@ -62,33 +61,11 @@ public class Networking : MonoBehaviour
         {
             byte[] tempBufferList = new byte[1024];
             tempBytesReceived = myServerSocket.Receive(tempBufferList);
+            tempStringReceived += Encoding.ASCII.GetString(tempBufferList, 0, tempBytesReceived);
 
-            if (tempStringReceived.Contains("Texture/"))
+            if (tempStringReceived[tempStringReceived.Length-1] == '~')
             {
-                for (int i = 0; i < tempBytesReceived; i++)
-                {
-                    string tempString = Encoding.ASCII.GetString(tempBufferList, 0, tempBytesReceived);
-                    if (tempString == "~")
-                    {
-                        tempShouldContinueReciveLoop = false;
-                    }
-                    else
-                    {
-                        tempReturnBytes.Add(tempBufferList[i]);
-                    }
-                }
-            }
-            else
-            {
-                tempStringReceived += Encoding.ASCII.GetString(tempBufferList, 0, tempBytesReceived);
-            }
-
-            for (int i = 0; i < tempStringReceived.Length; i++)
-            {
-                if (tempStringReceived[i] == '~')
-                {
-                    tempShouldContinueReciveLoop = false;
-                }
+                tempShouldContinueReciveLoop = false;
             }
         } while (tempShouldContinueReciveLoop);
         Debug.Log("Receiving is done");
@@ -107,8 +84,8 @@ public class Networking : MonoBehaviour
             }
         }
 
-
-        return tempReturnBytes;
+        tempSplitBufferList.RemoveAt(tempSplitBufferList.Count-1);
+        return tempSplitBufferList;
     }
 
     public void Send(byte[] aBuffer)
