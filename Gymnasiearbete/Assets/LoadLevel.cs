@@ -22,12 +22,18 @@ public class LoadLevel : MonoBehaviour
     void LoadLevel1()
     {
         myNetworking.Send(Encoding.UTF8.GetBytes("Texture"));
-        List<string> tempStringList = myNetworking.Receive();
+        byte[] tempReceiveReturnArray = myNetworking.Receive().ToArray();
 
-        byte[] tempByteArray = Encoding.UTF8.GetBytes(tempStringList[0]);
-        Mat tempImage = Cv2.ImDecode(tempByteArray, 0);
+        for (int i = 0; i < tempReceiveReturnArray.Length; i++)
+        {
+            Debug.Log("tempReceiveReturnArray i:" + i + "VALUE:" + tempReceiveReturnArray[i]);
+        }
+
+        Mat tempImage = Mat.FromImageData(tempReceiveReturnArray, ImreadModes.AnyColor);
         Cv2.ImShow("Image", tempImage);
         Cv2.WaitKey(0);
+
+
 
         //bool tempImageLoaded = tempTexture.LoadImage((byte)tempStringList[0]);
         //Debug.Log("Image Loaded " + tempImageLoaded);

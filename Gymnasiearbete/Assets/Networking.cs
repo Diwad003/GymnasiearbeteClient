@@ -46,37 +46,69 @@ public class Networking : MonoBehaviour
             GetComponent<UI>().RemakeConnectionToServerMenu();
         }
     }
-
-    public List<string> Receive()
+    
+    public List<byte> Receive()
     {
         //Get data from server
         myServerSocket.ReceiveTimeout = 30000;
         myServerSocket.SendTimeout = 30000;
         myServerSocket.Send(Encoding.UTF8.GetBytes("Send"));
 
+        List<byte> tempReturnBytes = new List<byte>();
+        int tempBytesReceived = 0;
+        string tempStringReceived = "";
+        bool tempShouldContinueReciveLoop = true;
+        do
+        {
+            byte[] tempBufferList = new byte[1024];
+            tempBytesReceived = myServerSocket.Receive(tempBufferList);
 
-        byte[] tempBufferList = new byte[int.MaxValue];
-        int tempBytesReceived = myServerSocket.Receive(tempBufferList);
-        string tempStringReceived = Encoding.ASCII.GetString(tempBufferList, 0, tempBytesReceived);
-        Debug.Log("tempStringReceived: " + tempStringReceived);
+            if (tempStringReceived.Contains("Texture/"))
+            {
+                for (int i = 0; i < tempBytesReceived; i++)
+                {
+                    string tempString = Encoding.ASCII.GetString(tempBufferList, 0, tempBytesReceived);
+                    if (tempString == "~")
+                    {
+                        tempShouldContinueReciveLoop = false;
+                    }
+                    else
+                    {
+                        tempReturnBytes.Add(tempBufferList[i]);
+                    }
+                }
+            }
+            else
+            {
+                tempStringReceived += Encoding.ASCII.GetString(tempBufferList, 0, tempBytesReceived);
+            }
+
+            for (int i = 0; i < tempStringReceived.Length; i++)
+            {
+                if (tempStringReceived[i] == '~')
+                {
+                    tempShouldContinueReciveLoop = false;
+                }
+            }
+        } while (tempShouldContinueReciveLoop);
+        Debug.Log("Receiving is done");
 
 
-        List<string> tempSplitBufferList = new List<string>();
-        tempSplitBufferList = tempStringReceived.Split('/').ToList();
+        List<string> tempSplitBufferList = tempStringReceived.Split('/').ToList();
         for (int i = 0; i < tempSplitBufferList.Count; i++)
         {
             if (tempSplitBufferList[i] == "SystemTime")
             {
                 tempSplitBufferList.RemoveAt(i);
                 GameObject tempServerText = GameObject.Find("LastRequestText");
-                tempServerText.GetComponent<Text>().text = "Last Sure Connection To Server: " + tempSplitBufferList[i];
+                tempServerText.GetComponent<Text>().text = "Last receive from server: " + tempSplitBufferList[i];
                 tempSplitBufferList.RemoveAt(i);
                 Debug.Log("SystemTime Set");
             }
         }
 
 
-        return tempSplitBufferList;
+        return tempReturnBytes;
     }
 
     public void Send(byte[] aBuffer)
