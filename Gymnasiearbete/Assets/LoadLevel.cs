@@ -13,27 +13,10 @@ public class LoadLevel : MonoBehaviour
 {
     Networking myNetworking;
 
-    private void Start()
+    public void LoadLevelNetworking()
     {
+        float tempStartTime = Time.realtimeSinceStartup;
         myNetworking = GameObject.Find("UIController").GetComponent<Networking>();
-        LoadLevel1();
-    }
-
-    Texture2D FindTexture(string tempName)
-    {
-        Texture2D[] tempAllTextures = Resources.LoadAll<Texture2D>("Textures");
-        foreach (Texture2D tempTexture in tempAllTextures)
-        {
-            if (tempTexture.name == tempName)
-            {
-                return tempTexture;
-            }
-        }
-        return null;
-    }
-
-    void LoadLevel1()
-    {
         myNetworking.Send(Encoding.UTF8.GetBytes("LoadLevel1"));
         List<string> tempReceiveReturn = myNetworking.Receive();
 
@@ -58,6 +41,49 @@ public class LoadLevel : MonoBehaviour
             tempGameObjects[i].GetComponent<MeshRenderer>().material.mainTexture = tempTextures[i];
             Debug.Log("SET TEXTURE");
         }
+
+        float tempDoneTime = Time.realtimeSinceStartup;
+        float tempDifference = tempDoneTime - tempStartTime;
+        Debug.Log("Time it takes to load from server " + tempDifference);
+    }
+
+    public void LoadLevelFile()
+    {
+        float tempStartTime = Time.realtimeSinceStartup;
+
+        List<string> tempReceiveReturn = new List<string>();
+        tempReceiveReturn.Add("Texture");
+        tempReceiveReturn.Add("Wood");
+        tempReceiveReturn.Add("GameObjects");
+        tempReceiveReturn.Add("2:2:2");
+        tempReceiveReturn.Add("Cube");
+
+        List<Texture2D> tempTextures = new List<Texture2D>();
+        List<GameObject> tempGameObjects = new List<GameObject>();
+        while (tempReceiveReturn.Count != 0)
+        {
+            if (tempReceiveReturn[0] == "Texture")
+            {
+                tempReceiveReturn.RemoveAt(0);
+                tempTextures = LoadAllTextures(ref tempReceiveReturn);
+            }
+            else if (tempReceiveReturn[0] == "GameObjects")
+            {
+                tempReceiveReturn.RemoveAt(0);
+                tempGameObjects = LoadAllGameObjects(ref tempReceiveReturn);
+            }
+        }
+
+        for (int i = 0; i < tempGameObjects.Count; i++)
+        {
+            tempGameObjects[i].GetComponent<MeshRenderer>().material.mainTexture = tempTextures[i];
+            Debug.Log("SET TEXTURE");
+        }
+
+
+        float tempDoneTime = Time.realtimeSinceStartup;
+        float tempDifference = tempDoneTime - tempStartTime;
+        Debug.Log("Time it takes to load from file " + tempDifference);
     }
 
     List<GameObject> LoadAllGameObjects(ref List<string> tempGameObjectNames)
@@ -121,6 +147,19 @@ public class LoadLevel : MonoBehaviour
         }
 
         return tempGameObjects;
+    }
+
+    Texture2D FindTexture(string tempName)
+    {
+        Texture2D[] tempAllTextures = Resources.LoadAll<Texture2D>("Textures");
+        foreach (Texture2D tempTexture in tempAllTextures)
+        {
+            if (tempTexture.name == tempName)
+            {
+                return tempTexture;
+            }
+        }
+        return null;
     }
 
     List<Texture2D> LoadAllTextures(ref List<string> tempTextureNames)

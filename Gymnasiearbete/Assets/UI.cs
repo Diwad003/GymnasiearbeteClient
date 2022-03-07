@@ -54,8 +54,8 @@ public class UI : MonoBehaviour
                 myStartButtonList[i].transform.localPosition.y - (myStartButtonList[i].GetComponent<RectTransform>().rect.height + 149))));
         }
 
-        myStartButtonList[0].GetComponentInChildren<Text>().text = "Load Level";
-        myStartButtonList[1].GetComponentInChildren<Text>().text = "Load Specific GameObject";
+        myStartButtonList[0].GetComponentInChildren<Text>().text = "Load Level with Networking";
+        myStartButtonList[1].GetComponentInChildren<Text>().text = "Load Level with File";
 
         for (int i = 0; i < myStartButtonList.Count; i++)
         {
@@ -69,10 +69,18 @@ public class UI : MonoBehaviour
         myStartMainMenu.SetActive(true);
         switch (aName)
         {
-            case "Load Level":
+            case "Load Level with Networking":
                 myLevelLoadController = new GameObject();
                 myLevelLoadController.name = "LevelLoadController";
                 myLevelLoadController.AddComponent<LoadLevel>();
+                myLevelLoadController.GetComponent<LoadLevel>().LoadLevelNetworking();
+                break;
+
+            case "Load Level with File":
+                myLevelLoadController = new GameObject();
+                myLevelLoadController.name = "LevelLoadController";
+                myLevelLoadController.AddComponent<LoadLevel>();
+                myLevelLoadController.GetComponent<LoadLevel>().LoadLevelFile();
                 break;
 
             case "Load Specific GameObject":
